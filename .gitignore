@@ -1,0 +1,42 @@
+# Node & Turborepo
+node_modules/
+.turbo/
+dist/
+build/
+coverage/
+*.log
+.DS_Store
+Thumbs.db
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Firebase
+google-services.json
+!google-services.json.placeholder
+GoogleService-Info.plist
+
+# Android bare workflow
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/.idea/
+apps/mobile/android/*.iml
+apps/mobile/android/local.properties
+apps/mobile/android/.cxx/
+*.keystore
+!apps/mobile/android/app/debug.keystore
+
+# iOS
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/ios/*.xcworkspace/
+apps/mobile/ios/*.xcuserdata/
+apps/mobile/ios/Podfile.lock
+
+# Metro & Bundler
+.metro-health-check*
