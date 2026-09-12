@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "references": [{ "path": "../../packages/shared" }, { "path": "../../packages/crypto" }],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "android", "ios", "**/*.test.ts", "**/*.test.tsx"]
+}
