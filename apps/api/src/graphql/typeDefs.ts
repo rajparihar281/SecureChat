@@ -1,0 +1,204 @@
+export const typeDefs = `#graphql
+  enum MessageStatus {
+    PENDING
+    SENT
+    DELIVERED
+    READ
+    FAILED
+  }
+
+  enum DevicePlatform {
+    ANDROID
+    IOS
+    WEB
+  }
+
+  type User {
+    id: ID!
+    username: String!
+    email: String!
+    displayName: String!
+    avatarUrl: String
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Device {
+    id: ID!
+    deviceId: String!
+    deviceName: String!
+    platform: DevicePlatform!
+    publicKey: String!
+    lastActiveAt: String!
+    createdAt: String!
+  }
+
+  type DeviceKeyBundle {
+    deviceId: String!
+    deviceName: String!
+    publicKey: String!
+    preKey: String
+  }
+
+  type EncryptedPayload {
+    ciphertext: String!
+    nonce: String!
+    senderPublicKey: String!
+    recipientPublicKey: String!
+    version: Int!
+  }
+
+  type Message {
+    id: ID!
+    conversationId: ID!
+    senderId: ID!
+    senderDeviceId: String!
+    recipientId: ID
+    encryptedPayload: EncryptedPayload!
+    status: MessageStatus!
+    createdAt: String!
+    deliveredAt: String
+    readAt: String
+  }
+
+  type MessageConnection {
+    items: [Message!]!
+    hasMore: Boolean!
+    nextCursor: String
+  }
+
+  type Conversation {
+    id: ID!
+    isGroup: Boolean!
+    name: String
+    createdBy: ID
+    participants: [User!]!
+    lastMessage: Message
+    unreadCount: Int!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AuthPayload {
+    user: User!
+    device: Device!
+    accessToken: String!
+    refreshToken: String!
+    expiresIn: Int!
+  }
+
+  type UserTypingPayload {
+    conversationId: ID!
+    userId: ID!
+    username: String!
+    isTyping: Boolean!
+  }
+
+  type MessageStatusUpdatePayload {
+    messageId: ID!
+    conversationId: ID!
+    status: MessageStatus!
+    timestamp: String!
+  }
+
+  # --- Inputs ---
+
+  input RegisterInput {
+    username: String!
+    email: String!
+    password: String!
+    displayName: String!
+    deviceId: String!
+    deviceName: String!
+    platform: DevicePlatform!
+    publicKey: String!
+  }
+
+  input LoginInput {
+    identifier: String! # username or email
+    password: String!
+    deviceId: String!
+    deviceName: String!
+    platform: DevicePlatform!
+    publicKey: String!
+  }
+
+  input RefreshTokenInput {
+    refreshToken: String!
+  }
+
+  input CreateConversationInput {
+    participantIds: [ID!]!
+    name: String
+    isGroup: Boolean
+  }
+
+  input EncryptedPayloadInput {
+    ciphertext: String!
+    nonce: String!
+    senderPublicKey: String!
+    recipientPublicKey: String!
+    version: Int!
+  }
+
+  input SendMessageInput {
+    clientMutationId: String # for client deduplication / optimistic reconcile
+    conversationId: ID!
+    recipientId: ID
+    encryptedPayload: EncryptedPayloadInput!
+  }
+
+  input UpdateMessageStatusInput {
+    messageId: ID!
+    status: MessageStatus!
+  }
+
+  input SetTypingInput {
+    conversationId: ID!
+    isTyping: Boolean!
+  }
+
+  input RegisterDeviceTokenInput {
+    pushToken: String!
+  }
+
+  input PreKeyInput {
+    keyId: Int!
+    publicKey: String!
+  }
+
+  input UploadDeviceKeysInput {
+    identityKey: String!
+    preKeys: [PreKeyInput!]!
+  }
+
+  # --- Operations ---
+
+  type Query {
+    me: User!
+    users(query: String): [User!]!
+    conversation(id: ID!): Conversation
+    conversations(limit: Int, offset: Int): [Conversation!]!
+    messages(conversationId: ID!, limit: Int, beforeCursor: String): MessageConnection!
+    deviceKeys(userId: ID!): [DeviceKeyBundle!]!
+  }
+
+  type Mutation {
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+    refreshToken(input: RefreshTokenInput!): AuthPayload!
+    logout: Boolean!
+    createConversation(input: CreateConversationInput!): Conversation!
+    sendMessage(input: SendMessageInput!): Message!
+    updateMessageStatus(input: UpdateMessageStatusInput!): Message!
+    setTyping(input: SetTypingInput!): Boolean!
+    registerPushToken(input: RegisterDeviceTokenInput!): Boolean!
+    uploadDeviceKeys(input: UploadDeviceKeysInput!): Boolean!
+  }
+
+  type Subscription {
+    messageSent(conversationId: ID!): Message!
+    messageStatusUpdated(conversationId: ID!): MessageStatusUpdatePayload!
+    userTyping(conversationId: ID!): UserTypingPayload!
+  }
+`;

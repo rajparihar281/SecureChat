@@ -11,13 +11,13 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] GitHub Actions CI workflow (`.github/workflows/ci.yml`)
   - [x] Initial documentation skeletons (`README.md`, `PROGRESS.md`, `BLOCKERS.md`)
 
-- [ ] **Phase 2: API Foundation**
-  - [ ] Node.js + TypeScript GraphQL API server (Apollo Server 4 + Express + graphql-ws)
-  - [ ] PostgreSQL database schema and migrations (Users, Devices, Conversations, Participants, Messages, PreKeys)
-  - [ ] Argon2 password hashing + short-lived JWT + rotating refresh tokens
-  - [ ] Device tracking & session invalidation
-  - [ ] Typed GraphQL resolvers & custom Apollo error formatting
-  - [ ] Comprehensive Jest resolver unit tests
+- [x] **Phase 2: API Foundation**
+  - [x] Node.js + TypeScript GraphQL API server (Apollo Server 4 + Express + graphql-ws)
+  - [x] PostgreSQL database schema and migrations (Users, Devices, Conversations, Participants, Messages, PreKeys)
+  - [x] Argon2 password hashing + short-lived JWT + rotating refresh tokens
+  - [x] Device tracking & session invalidation
+  - [x] Typed GraphQL resolvers & custom Apollo error formatting
+  - [x] Comprehensive Jest resolver unit tests
 
 - [ ] **Phase 3: RN App Foundation**
   - [ ] Bare React Native mobile application structure (`apps/mobile`)
