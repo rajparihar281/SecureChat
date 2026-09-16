@@ -3,6 +3,14 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts', '**/*.test.tsx'],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }]
-  }
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
+        isolatedModules: true,
+      },
+    ],
+  },
 };
