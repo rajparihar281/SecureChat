@@ -7,7 +7,15 @@ import {
 
 describe('Navigation Types', () => {
   it('ensures type consistency for param lists', () => {
-    // Type compile check
+    const authParams: AuthStackParamList['Login'] = undefined;
+    expect(authParams).toBeUndefined();
+
+    const mainParams: MainTabParamList['Conversations'] = undefined;
+    expect(mainParams).toBeUndefined();
+
+    const rootParams: RootStackParamList['Main'] = undefined;
+    expect(rootParams).toBeUndefined();
+
     const chatRoomParams: ChatStackParamList['ChatRoom'] = {
       conversationId: 'conv-123',
       recipientName: 'Alice',

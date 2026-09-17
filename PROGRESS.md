@@ -25,11 +25,11 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] React Navigation (Auth stack, Main tabs, Chat stack) with type-safe params
   - [x] Dark-mode-first design tokens, theme system, and base atomic components
 
-- [ ] **Phase 4: Apollo Client & Codegen**
-  - [ ] GraphQL Code Generator setup in `packages/shared`
-  - [ ] Apollo Client with typed InMemoryCache and pagination typePolicies
-  - [ ] Auth link injecting bearer tokens from secure storage
-  - [ ] Error link with silent token refresh on 401 and exponential backoff retry
+- [x] **Phase 4: Apollo Client & Codegen**
+  - [x] GraphQL Code Generator setup in `packages/shared`
+  - [x] Apollo Client with typed InMemoryCache and pagination typePolicies
+  - [x] Auth link injecting bearer tokens from secure storage
+  - [x] Error link with silent token refresh on 401 and exponential backoff retry
 
 - [ ] **Phase 5: Secure Session**
   - [ ] Hardware-backed secure storage integration (`react-native-keychain`)
