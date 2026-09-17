@@ -1,0 +1,207 @@
+fragment UserFields on User {
+  id
+  username
+  email
+  displayName
+  avatarUrl
+  createdAt
+  updatedAt
+}
+
+fragment DeviceFields on Device {
+  id
+  deviceId
+  deviceName
+  platform
+  publicKey
+  lastActiveAt
+  createdAt
+}
+
+fragment EncryptedPayloadFields on EncryptedPayload {
+  ciphertext
+  nonce
+  senderPublicKey
+  recipientPublicKey
+  version
+}
+
+fragment MessageFields on Message {
+  id
+  conversationId
+  senderId
+  senderDeviceId
+  recipientId
+  encryptedPayload {
+    ...EncryptedPayloadFields
+  }
+  status
+  createdAt
+  deliveredAt
+  readAt
+}
+
+fragment ConversationFields on Conversation {
+  id
+  isGroup
+  name
+  createdBy
+  participants {
+    ...UserFields
+  }
+  lastMessage {
+    ...MessageFields
+  }
+  unreadCount
+  createdAt
+  updatedAt
+}
+
+# --- Queries ---
+
+query GetMe {
+  me {
+    ...UserFields
+  }
+}
+
+query GetUsers($query: String) {
+  users(query: $query) {
+    ...UserFields
+  }
+}
+
+query GetConversation($id: ID!) {
+  conversation(id: $id) {
+    ...ConversationFields
+  }
+}
+
+query GetConversations($limit: Int, $offset: Int) {
+  conversations(limit: $limit, offset: $offset) {
+    ...ConversationFields
+  }
+}
+
+query GetMessages($conversationId: ID!, $limit: Int, $beforeCursor: String) {
+  messages(conversationId: $conversationId, limit: $limit, beforeCursor: $beforeCursor) {
+    items {
+      ...MessageFields
+    }
+    hasMore
+    nextCursor
+  }
+}
+
+query GetDeviceKeys($userId: ID!) {
+  deviceKeys(userId: $userId) {
+    deviceId
+    deviceName
+    publicKey
+    preKey
+  }
+}
+
+# --- Mutations ---
+
+mutation Register($input: RegisterInput!) {
+  register(input: $input) {
+    user {
+      ...UserFields
+    }
+    device {
+      ...DeviceFields
+    }
+    accessToken
+    refreshToken
+    expiresIn
+  }
+}
+
+mutation Login($input: LoginInput!) {
+  login(input: $input) {
+    user {
+      ...UserFields
+    }
+    device {
+      ...DeviceFields
+    }
+    accessToken
+    refreshToken
+    expiresIn
+  }
+}
+
+mutation RefreshToken($input: RefreshTokenInput!) {
+  refreshToken(input: $input) {
+    user {
+      ...UserFields
+    }
+    device {
+      ...DeviceFields
+    }
+    accessToken
+    refreshToken
+    expiresIn
+  }
+}
+
+mutation Logout {
+  logout
+}
+
+mutation CreateConversation($input: CreateConversationInput!) {
+  createConversation(input: $input) {
+    ...ConversationFields
+  }
+}
+
+mutation SendMessage($input: SendMessageInput!) {
+  sendMessage(input: $input) {
+    ...MessageFields
+  }
+}
+
+mutation UpdateMessageStatus($input: UpdateMessageStatusInput!) {
+  updateMessageStatus(input: $input) {
+    ...MessageFields
+  }
+}
+
+mutation SetTyping($input: SetTypingInput!) {
+  setTyping(input: $input)
+}
+
+mutation RegisterPushToken($input: RegisterDeviceTokenInput!) {
+  registerPushToken(input: $input)
+}
+
+mutation UploadDeviceKeys($input: UploadDeviceKeysInput!) {
+  uploadDeviceKeys(input: $input)
+}
+
+# --- Subscriptions ---
+
+subscription OnMessageSent($conversationId: ID!) {
+  messageSent(conversationId: $conversationId) {
+    ...MessageFields
+  }
+}
+
+subscription OnMessageStatusUpdated($conversationId: ID!) {
+  messageStatusUpdated(conversationId: $conversationId) {
+    messageId
+    conversationId
+    status
+    timestamp
+  }
+}
+
+subscription OnUserTyping($conversationId: ID!) {
+  userTyping(conversationId: $conversationId) {
+    conversationId
+    userId
+    username
+    isTyping
+  }
+}

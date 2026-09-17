@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "codegen": "graphql-codegen --config codegen.ts",
     "build": "tsc -b",
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",
@@ -15,6 +16,9 @@
     "graphql": "^16.10.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^7.4.6",
+    "@graphql-codegen/typescript": "^6.1.2",
+    "@graphql-codegen/typescript-operations": "^6.2.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.5",
     "jest": "^29.7.0",
