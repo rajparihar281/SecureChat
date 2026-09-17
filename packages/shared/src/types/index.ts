@@ -1,6 +1,4 @@
-export type MessageStatus = 'PENDING' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
-
-export type DevicePlatform = 'ANDROID' | 'IOS' | 'WEB';
+import type { MessageStatus, DevicePlatform } from '../graphql/schema-types.js';
 
 export interface UserSummary {
   id: string;
@@ -19,14 +17,6 @@ export interface DeviceInfo {
   pushToken?: string | null;
   publicKey: string;
   lastActiveAt: string;
-}
-
-export interface EncryptedPayload {
-  ciphertext: string; // Base64
-  nonce: string; // Base64 (24 bytes)
-  senderPublicKey: string; // Base64 (32 bytes)
-  recipientPublicKey: string; // Base64 (32 bytes)
-  version: number;
 }
 
 export interface ConversationSummary {
