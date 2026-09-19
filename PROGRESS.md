@@ -31,11 +31,11 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Auth link injecting bearer tokens from secure storage
   - [x] Error link with silent token refresh on 401 and exponential backoff retry
 
-- [ ] **Phase 5: Secure Session**
-  - [ ] Hardware-backed secure storage integration (`react-native-keychain`)
-  - [ ] Silent refresh flow with mutex queue
-  - [ ] Logout purge & session expiry handler
-  - [ ] Auth context & custom hooks (`useAuth`, `useSession`)
+- [x] **Phase 5: Secure Session**
+  - [x] Hardware-backed secure storage integration (`react-native-keychain`)
+  - [x] Silent refresh flow with mutex queue
+  - [x] Logout purge & session expiry handler
+  - [x] Auth context & custom hooks (`useAuth`, `useSession`)
 
 - [ ] **Phase 6: Conversations & Messages UI**
   - [ ] FlatList virtualization tuning (`windowSize`, `maxToRenderPerBatch`, `removeClippedSubviews`)
