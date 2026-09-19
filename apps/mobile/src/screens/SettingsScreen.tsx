@@ -1,15 +1,52 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '../theme';
-import { Header, Card, Badge } from '../components';
+import { Header, Card, Badge, Button, Avatar } from '../components';
+import { useAuth } from '../auth';
 
 export const SettingsScreen: React.FC = () => {
   const { colors, typography, spacing, mode, setMode } = useTheme();
+  const { user, device, logout } = useAuth();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Settings" />
       <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
+        {user ? (
+          <>
+            <Text
+              style={[
+                typography.caption,
+                {
+                  color: colors.textSecondary,
+                  marginBottom: spacing.sm,
+                  textTransform: 'uppercase',
+                },
+              ]}
+            >
+              Account
+            </Text>
+            <Card style={{ marginBottom: spacing.xl }}>
+              <View style={styles.userRow}>
+                <Avatar name={user.displayName} size={56} />
+                <View style={{ marginLeft: spacing.md, flex: 1 }}>
+                  <Text style={[typography.h3, { color: colors.textPrimary }]} numberOfLines={1}>
+                    {user.displayName}
+                  </Text>
+                  <Text style={[typography.bodySmall, { color: colors.textSecondary }]}>
+                    @{user.username}
+                  </Text>
+                  {device ? (
+                    <Text style={[typography.caption, { color: colors.textMuted, marginTop: 4 }]}>
+                      Device: {device.deviceName} ({device.deviceId.substring(0, 10)}...)
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+            </Card>
+          </>
+        ) : null}
+
         <Text
           style={[
             typography.caption,
@@ -80,6 +117,24 @@ export const SettingsScreen: React.FC = () => {
             { color: colors.textSecondary, marginBottom: spacing.sm, textTransform: 'uppercase' },
           ]}
         >
+          Session
+        </Text>
+        <Card style={{ marginBottom: spacing.xl }}>
+          <Button
+            title="Log Out"
+            variant="danger"
+            onPress={() => {
+              logout().catch(() => {});
+            }}
+          />
+        </Card>
+
+        <Text
+          style={[
+            typography.caption,
+            { color: colors.textSecondary, marginBottom: spacing.sm, textTransform: 'uppercase' },
+          ]}
+        >
           About
         </Text>
         <Card>
@@ -102,6 +157,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   themeRow: {

@@ -4,10 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { Button, Input, Card } from '../components';
 import { AuthNavigationProp } from '../navigation/types';
+import { useAuth } from '../auth';
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<AuthNavigationProp>();
   const { colors, typography, spacing } = useTheme();
+  const { login } = useAuth();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +24,7 @@ export const LoginScreen: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      // Auth integration hooked up in Phase 5
+      await login({ identifier, password });
     } catch (err) {
       setError((err as Error).message || 'Failed to login');
     } finally {

@@ -4,10 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { Button, Input, Card } from '../components';
 import { AuthNavigationProp } from '../navigation/types';
+import { useAuth } from '../auth';
 
 export const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<AuthNavigationProp>();
   const { colors, typography, spacing } = useTheme();
+  const { register } = useAuth();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +26,7 @@ export const RegisterScreen: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      // Integrated in Phase 5
+      await register({ username, email, password, displayName });
     } catch (err) {
       setError((err as Error).message || 'Failed to register');
     } finally {
