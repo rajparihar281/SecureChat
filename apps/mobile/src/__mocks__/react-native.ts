@@ -17,6 +17,11 @@ export const TouchableOpacity = 'TouchableOpacity';
 export const FlatList = 'FlatList';
 export const ActivityIndicator = 'ActivityIndicator';
 export const SafeAreaView = 'SafeAreaView';
+export const RefreshControl = 'RefreshControl';
+export const KeyboardAvoidingView = 'KeyboardAvoidingView';
+export const ScrollView = 'ScrollView';
+export const useColorScheme = (): 'dark' | 'light' => 'dark';
+
 export const AppState = {
   currentState: 'active',
   addEventListener: jest.fn(() => ({ remove: jest.fn() })),
@@ -32,5 +37,9 @@ export default {
   FlatList,
   ActivityIndicator,
   SafeAreaView,
+  RefreshControl,
+  KeyboardAvoidingView,
+  ScrollView,
+  useColorScheme,
   AppState,
 };

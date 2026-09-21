@@ -37,11 +37,11 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Logout purge & session expiry handler
   - [x] Auth context & custom hooks (`useAuth`, `useSession`)
 
-- [ ] **Phase 6: Conversations & Messages UI**
-  - [ ] FlatList virtualization tuning (`windowSize`, `maxToRenderPerBatch`, `removeClippedSubviews`)
-  - [ ] Cursor-based pagination (`fetchMore`)
-  - [ ] Memoized conversation list and message bubbles (`React.memo`, `useCallback`, `useMemo`)
-  - [ ] Inverted message list with status receipts (pending, sent, delivered, read, failed)
+- [x] **Phase 6: Conversations & Messages UI**
+  - [x] FlatList virtualization tuning (`windowSize`, `maxToRenderPerBatch`, `removeClippedSubviews`)
+  - [x] Cursor-based pagination (`fetchMore`)
+  - [x] Memoized conversation list and message bubbles (`React.memo`, `useCallback`, `useMemo`)
+  - [x] Inverted message list with status receipts (pending, sent, delivered, read, failed)
 
 - [ ] **Phase 7: Optimistic Send & Offline Queue**
   - [ ] Optimistic response and instant cache update
