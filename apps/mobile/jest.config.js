@@ -6,6 +6,10 @@ module.exports = {
   moduleNameMapper: {
     '^react-native$': '<rootDir>/src/__mocks__/react-native.ts',
     '^react-native-keychain$': '<rootDir>/src/__mocks__/react-native-keychain.ts',
+    '^@react-native-async-storage/async-storage$':
+      '<rootDir>/src/__mocks__/@react-native-async-storage/async-storage.ts',
+    '^@react-native-community/netinfo$':
+      '<rootDir>/src/__mocks__/@react-native-community/netinfo.ts',
   },
   transform: {
     '^.+\\.(ts|tsx)$': [
