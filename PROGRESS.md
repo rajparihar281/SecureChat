@@ -43,10 +43,10 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Memoized conversation list and message bubbles (`React.memo`, `useCallback`, `useMemo`)
   - [x] Inverted message list with status receipts (pending, sent, delivered, read, failed)
 
-- [ ] **Phase 7: Optimistic Send & Offline Queue**
-  - [ ] Optimistic response and instant cache update
-  - [ ] Cache rollback on mutation error with "Failed, tap to retry" state
-  - [ ] Offline queue manager with NetInfo auto-retry on reconnect
+- [x] **Phase 7: Optimistic Send & Offline Queue**
+  - [x] Optimistic response and instant cache update
+  - [x] Cache rollback on mutation error with "Failed, tap to retry" state
+  - [x] Offline queue manager with NetInfo auto-retry on reconnect
 
 - [ ] **Phase 8: Real-Time Subscriptions**
   - [ ] GraphQL subscriptions over `graphql-ws` WebSocket transport
