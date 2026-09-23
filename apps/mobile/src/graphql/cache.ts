@@ -32,7 +32,7 @@ const conversationsFieldPolicy: FieldPolicy = {
 
 const messagesFieldPolicy: FieldPolicy<MessageConnectionCache> = {
   keyArgs: ['conversationId'],
-  merge(existing, incoming, { readField }) {
+  merge(existing, incoming, { args, readField }) {
     if (!existing) {
       return incoming;
     }
@@ -40,31 +40,33 @@ const messagesFieldPolicy: FieldPolicy<MessageConnectionCache> = {
       return existing;
     }
 
-    const mergedItemsMap = new Map<string, CacheItem>();
+    // Only merge pages when paginating with beforeCursor
+    if (args?.beforeCursor) {
+      const mergedItemsMap = new Map<string, CacheItem>();
 
-    // Add existing items
-    for (const item of existing.items || []) {
-      const id = readField<string>('id', item);
-      if (id) {
-        mergedItemsMap.set(id, item);
+      for (const item of existing.items || []) {
+        const id = readField<string>('id', item);
+        if (id) {
+          mergedItemsMap.set(id, item);
+        }
       }
+
+      for (const item of incoming.items || []) {
+        const id = readField<string>('id', item);
+        if (id) {
+          mergedItemsMap.set(id, item);
+        }
+      }
+
+      return {
+        items: Array.from(mergedItemsMap.values()),
+        hasMore: incoming.hasMore !== undefined ? incoming.hasMore : existing.hasMore,
+        nextCursor: incoming.nextCursor !== undefined ? incoming.nextCursor : existing.nextCursor,
+      };
     }
 
-    // Merge incoming items, replacing matching IDs
-    for (const item of incoming.items || []) {
-      const id = readField<string>('id', item);
-      if (id) {
-        mergedItemsMap.set(id, item);
-      }
-    }
-
-    const items = Array.from(mergedItemsMap.values());
-
-    return {
-      items,
-      hasMore: incoming.hasMore !== undefined ? incoming.hasMore : existing.hasMore,
-      nextCursor: incoming.nextCursor !== undefined ? incoming.nextCursor : existing.nextCursor,
-    };
+    // Otherwise, replace with incoming full/updated collection
+    return incoming;
   },
 };
 

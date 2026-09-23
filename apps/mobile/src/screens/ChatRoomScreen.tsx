@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   ListRenderItemInfo,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useApolloClient } from '@apollo/client';
 import {
   GET_MESSAGES_QUERY,
   SEND_MESSAGE_MUTATION,
@@ -20,17 +20,26 @@ import {
   SendMessageMutation,
   SendMessageMutationVariables,
   MessageFieldsFragment,
+  MessageStatus,
 } from '@securechat/shared';
 import { useTheme } from '../theme';
 import { Header, EmptyState, LoadingSpinner, MessageBubble } from '../components';
 import { ChatRoomRouteProp, RootNavigationProp } from '../navigation/types';
 import { useAuth } from '../auth';
+import {
+  createOptimisticMessage,
+  appendOptimisticMessage,
+  updateMessageStatusInCache,
+  replaceOptimisticMessageInCache,
+} from '../graphql/optimistic';
+import { OfflineQueueManager, QueuedMessage } from '../queue';
 
 export const ChatRoomScreen: React.FC = () => {
   const route = useRoute<ChatRoomRouteProp>();
   const navigation = useNavigation<RootNavigationProp>();
   const { colors, typography } = useTheme();
-  const { user } = useAuth();
+  const { user, device } = useAuth();
+  const client = useApolloClient();
 
   const { conversationId, recipientName, recipientPublicKey } = route.params;
   const [inputText, setInputText] = useState('');
@@ -49,6 +58,42 @@ export const ChatRoomScreen: React.FC = () => {
     SendMessageMutation,
     SendMessageMutationVariables
   >(SEND_MESSAGE_MUTATION);
+
+  // Initialize and register sender with OfflineQueueManager
+  useEffect(() => {
+    const queueManager = OfflineQueueManager.getInstance();
+    queueManager.initialize().catch(() => {});
+
+    queueManager.setSender(async (queued: QueuedMessage): Promise<boolean> => {
+      try {
+        const result = await client.mutate<SendMessageMutation, SendMessageMutationVariables>({
+          mutation: SEND_MESSAGE_MUTATION,
+          variables: {
+            input: {
+              clientMutationId: queued.clientMutationId,
+              conversationId: queued.conversationId,
+              recipientId: queued.recipientId,
+              encryptedPayload: queued.encryptedPayload,
+            },
+          },
+        });
+
+        const serverMessage = result.data?.sendMessage;
+        if (serverMessage) {
+          replaceOptimisticMessageInCache(
+            client.cache,
+            queued.conversationId,
+            queued.tempId,
+            serverMessage,
+          );
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      }
+    });
+  }, [client]);
 
   // Inverted FlatList requires newest message first (at index 0)
   const messages = useMemo(() => {
@@ -86,29 +131,131 @@ export const ChatRoomScreen: React.FC = () => {
 
   const handleSend = useCallback(async () => {
     const trimmed = inputText.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || sending || !user) return;
 
     setInputText('');
 
+    const clientMutationId = `mut_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+    const encryptedPayload = {
+      ciphertext: Buffer.from(trimmed).toString('base64'),
+      nonce: Buffer.from('dummy_nonce_24_bytes_len_!').toString('base64'),
+      senderPublicKey: 'dummy_sender_public_key_32b',
+      recipientPublicKey: recipientPublicKey || 'dummy_recipient_public_key',
+      version: 1,
+    };
+
+    // 1. Immediately create and write optimistic message to cache with status PENDING
+    const optimisticMessage = createOptimisticMessage({
+      tempId,
+      conversationId,
+      senderId: user.id,
+      senderDeviceId: device?.deviceId || 'dev_current',
+      encryptedPayload,
+    });
+
+    appendOptimisticMessage(client.cache, conversationId, optimisticMessage);
+
+    // 2. Persist to offline queue
+    const queuedMessage: QueuedMessage = {
+      clientMutationId,
+      tempId,
+      conversationId,
+      encryptedPayload,
+      plaintextPreview: trimmed,
+      createdAt: optimisticMessage.createdAt,
+      retryCount: 0,
+      status: 'PENDING',
+    };
+
+    const queueManager = OfflineQueueManager.getInstance();
+    await queueManager.enqueue(queuedMessage);
+
+    // 3. Dispatch network mutation
     try {
-      await sendMessageMutation({
+      const response = await sendMessageMutation({
         variables: {
           input: {
+            clientMutationId,
             conversationId,
-            encryptedPayload: {
-              ciphertext: Buffer.from(trimmed).toString('base64'),
-              nonce: Buffer.from('dummy_nonce_24_bytes_len_!').toString('base64'),
-              senderPublicKey: 'dummy_sender_public_key_32b',
-              recipientPublicKey: recipientPublicKey || 'dummy_recipient_public_key',
-              version: 1,
-            },
+            encryptedPayload,
           },
         },
       });
+
+      const serverMessage = response.data?.sendMessage;
+      if (serverMessage) {
+        // Successful send: dequeue and replace temp message in cache
+        await queueManager.dequeue(clientMutationId);
+        replaceOptimisticMessageInCache(client.cache, conversationId, tempId, serverMessage);
+      }
     } catch {
-      // Mutation errors handled in cache or UI
+      // Failed mutation: keep in queue and mark FAILED in cache with tap to retry
+      await queueManager.markFailed(clientMutationId);
+      updateMessageStatusInCache(client.cache, conversationId, tempId, MessageStatus.Failed);
     }
-  }, [inputText, sending, sendMessageMutation, conversationId, recipientPublicKey]);
+  }, [
+    inputText,
+    sending,
+    user,
+    device?.deviceId,
+    recipientPublicKey,
+    client.cache,
+    conversationId,
+    sendMessageMutation,
+  ]);
+
+  const handleRetry = useCallback(
+    async (failedMessage: MessageFieldsFragment) => {
+      // Mark as PENDING immediately in cache
+      updateMessageStatusInCache(
+        client.cache,
+        conversationId,
+        failedMessage.id,
+        MessageStatus.Pending,
+      );
+
+      const clientMutationId = `retry_${failedMessage.id}`;
+
+      try {
+        const response = await sendMessageMutation({
+          variables: {
+            input: {
+              clientMutationId,
+              conversationId,
+              encryptedPayload: {
+                ciphertext: failedMessage.encryptedPayload.ciphertext,
+                nonce: failedMessage.encryptedPayload.nonce,
+                senderPublicKey: failedMessage.encryptedPayload.senderPublicKey,
+                recipientPublicKey: failedMessage.encryptedPayload.recipientPublicKey,
+                version: failedMessage.encryptedPayload.version,
+              },
+            },
+          },
+        });
+
+        const serverMessage = response.data?.sendMessage;
+        if (serverMessage) {
+          replaceOptimisticMessageInCache(
+            client.cache,
+            conversationId,
+            failedMessage.id,
+            serverMessage,
+          );
+        }
+      } catch {
+        // Still failed, mark back to FAILED
+        updateMessageStatusInCache(
+          client.cache,
+          conversationId,
+          failedMessage.id,
+          MessageStatus.Failed,
+        );
+      }
+    },
+    [client.cache, conversationId, sendMessageMutation],
+  );
 
   const renderMessageItem = useCallback(
     ({ item }: ListRenderItemInfo<MessageFieldsFragment>) => {
@@ -122,9 +269,16 @@ export const ChatRoomScreen: React.FC = () => {
         textContent = '🔒 Encrypted message';
       }
 
-      return <MessageBubble message={item} isOutgoing={isOutgoing} decryptedText={textContent} />;
+      return (
+        <MessageBubble
+          message={item}
+          isOutgoing={isOutgoing}
+          decryptedText={textContent}
+          onRetry={handleRetry}
+        />
+      );
     },
-    [user?.id],
+    [user?.id, handleRetry],
   );
 
   return (

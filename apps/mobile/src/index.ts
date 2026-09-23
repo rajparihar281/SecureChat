@@ -8,3 +8,4 @@ export function getAppInfo(): { name: string; version: string } {
 
 export * from './graphql';
 export * from './auth';
+export * from './queue';

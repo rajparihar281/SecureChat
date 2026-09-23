@@ -110,7 +110,7 @@ describe('Apollo Cache TypePolicies', () => {
 
     cache.writeQuery({
       query,
-      variables: { conversationId: 'c1' },
+      variables: { conversationId: 'c1', beforeCursor: 'cursor_1' },
       data: {
         messages: {
           __typename: 'MessageConnection',
