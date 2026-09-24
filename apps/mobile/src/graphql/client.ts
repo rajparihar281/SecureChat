@@ -1,9 +1,11 @@
-import { ApolloClient, ApolloLink, HttpLink, Observable, from } from '@apollo/client';
+import { ApolloClient, ApolloLink, HttpLink, Observable, from, split } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 import { RetryLink } from '@apollo/client/link/retry';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { Platform } from 'react-native';
 import { createApolloCache } from './cache';
+import { createWsLink, getDefaultWsUrl, WsConnectionHandle } from './wsClient';
 
 export interface TokenProvider {
   getAccessToken(): Promise<string | null>;
@@ -14,8 +16,10 @@ export interface TokenProvider {
 
 export interface ClientConfig {
   apiUrl?: string;
+  wsUrl?: string;
   tokenProvider?: TokenProvider;
   customLinks?: ApolloLink[];
+  enableSubscriptions?: boolean;
 }
 
 export function getDefaultApiUrl(): string {
@@ -126,28 +130,54 @@ export function createRetryLink(): RetryLink {
   });
 }
 
+export interface ClientWithSubscriptions {
+  client: ApolloClient<unknown>;
+  wsHandle?: WsConnectionHandle;
+}
+
 export function createApolloClient(config: ClientConfig = {}): ApolloClient<unknown> {
   const apiUrl = config.apiUrl || getDefaultApiUrl();
+  const wsUrl = config.wsUrl || getDefaultWsUrl();
   const cache = createApolloCache();
   const httpLink = new HttpLink({ uri: apiUrl });
 
-  const links: ApolloLink[] = [];
+  const httpLinks: ApolloLink[] = [];
 
   if (config.tokenProvider) {
     const errorLink = createErrorLink(config.tokenProvider);
     const authLink = createAuthLink(config.tokenProvider);
     const retryLink = createRetryLink();
-    links.push(errorLink, authLink, retryLink);
+    httpLinks.push(errorLink, authLink, retryLink);
   }
 
   if (config.customLinks) {
-    links.push(...config.customLinks);
+    httpLinks.push(...config.customLinks);
   }
 
-  links.push(httpLink);
+  httpLinks.push(httpLink);
+  const httpChain = from(httpLinks);
+
+  let finalLink: ApolloLink = httpChain;
+
+  // Split link for WebSocket subscriptions if enabled (default true)
+  if (config.enableSubscriptions !== false) {
+    const wsHandle = createWsLink({
+      wsUrl,
+      tokenProvider: config.tokenProvider,
+    });
+
+    finalLink = split(
+      ({ query }) => {
+        const definition = getMainDefinition(query);
+        return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+      },
+      wsHandle.wsLink,
+      httpChain,
+    );
+  }
 
   return new ApolloClient({
-    link: from(links),
+    link: finalLink,
     cache,
     defaultOptions: {
       watchQuery: {
