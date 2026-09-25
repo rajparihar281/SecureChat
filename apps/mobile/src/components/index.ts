@@ -8,3 +8,4 @@ export * from './LoadingSpinner';
 export * from './EmptyState';
 export * from './ConversationRow';
 export * from './MessageBubble';
+export * from './TypingIndicator';

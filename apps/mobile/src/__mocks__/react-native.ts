@@ -27,6 +27,32 @@ export const AppState = {
   addEventListener: jest.fn(() => ({ remove: jest.fn() })),
 };
 
+export const Animated = {
+  Value: jest.fn().mockImplementation((val: number) => ({
+    setValue: jest.fn(),
+    interpolate: jest.fn(),
+    _value: val,
+  })),
+  timing: jest.fn(() => ({
+    start: jest.fn((cb?: () => void) => cb?.()),
+    stop: jest.fn(),
+  })),
+  sequence: jest.fn(() => ({
+    start: jest.fn((cb?: () => void) => cb?.()),
+    stop: jest.fn(),
+  })),
+  loop: jest.fn(() => ({
+    start: jest.fn(),
+    stop: jest.fn(),
+  })),
+  delay: jest.fn(() => ({
+    start: jest.fn(),
+    stop: jest.fn(),
+  })),
+  View: 'View',
+  Text: 'Text',
+};
+
 export default {
   Platform,
   StyleSheet,
@@ -42,4 +68,5 @@ export default {
   ScrollView,
   useColorScheme,
   AppState,
+  Animated,
 };
