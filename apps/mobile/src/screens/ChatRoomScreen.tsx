@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,24 +11,40 @@ import {
   ListRenderItemInfo,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { useQuery, useMutation, useApolloClient } from '@apollo/client';
+import { useQuery, useMutation, useSubscription, useApolloClient } from '@apollo/client';
 import {
   GET_MESSAGES_QUERY,
   SEND_MESSAGE_MUTATION,
+  UPDATE_MESSAGE_STATUS_MUTATION,
+  SET_TYPING_MUTATION,
+  ON_MESSAGE_SENT_SUBSCRIPTION,
+  ON_MESSAGE_STATUS_UPDATED_SUBSCRIPTION,
+  ON_USER_TYPING_SUBSCRIPTION,
   GetMessagesQuery,
   GetMessagesQueryVariables,
   SendMessageMutation,
   SendMessageMutationVariables,
+  UpdateMessageStatusMutation,
+  UpdateMessageStatusMutationVariables,
+  SetTypingMutation,
+  SetTypingMutationVariables,
+  OnMessageSentSubscription,
+  OnMessageSentSubscriptionVariables,
+  OnMessageStatusUpdatedSubscription,
+  OnMessageStatusUpdatedSubscriptionVariables,
+  OnUserTypingSubscription,
+  OnUserTypingSubscriptionVariables,
   MessageFieldsFragment,
   MessageStatus,
 } from '@securechat/shared';
 import { useTheme } from '../theme';
-import { Header, EmptyState, LoadingSpinner, MessageBubble } from '../components';
+import { Header, EmptyState, LoadingSpinner, MessageBubble, TypingIndicator } from '../components';
 import { ChatRoomRouteProp, RootNavigationProp } from '../navigation/types';
 import { useAuth } from '../auth';
 import {
   createOptimisticMessage,
   appendOptimisticMessage,
+  appendServerMessageIfNotExists,
   updateMessageStatusInCache,
   replaceOptimisticMessageInCache,
 } from '../graphql/optimistic';
@@ -44,7 +60,12 @@ export const ChatRoomScreen: React.FC = () => {
   const { conversationId, recipientName, recipientPublicKey } = route.params;
   const [inputText, setInputText] = useState('');
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
 
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
+
+  // Queries & Mutations
   const { data, loading, fetchMore } = useQuery<GetMessagesQuery, GetMessagesQueryVariables>(
     GET_MESSAGES_QUERY,
     {
@@ -59,7 +80,122 @@ export const ChatRoomScreen: React.FC = () => {
     SendMessageMutationVariables
   >(SEND_MESSAGE_MUTATION);
 
-  // Initialize and register sender with OfflineQueueManager
+  const [updateMessageStatusMutation] = useMutation<
+    UpdateMessageStatusMutation,
+    UpdateMessageStatusMutationVariables
+  >(UPDATE_MESSAGE_STATUS_MUTATION);
+
+  const [setTypingMutation] = useMutation<SetTypingMutation, SetTypingMutationVariables>(
+    SET_TYPING_MUTATION,
+  );
+
+  // Subscriptions
+  useSubscription<OnMessageSentSubscription, OnMessageSentSubscriptionVariables>(
+    ON_MESSAGE_SENT_SUBSCRIPTION,
+    {
+      variables: { conversationId },
+      onData: ({ data: subData }) => {
+        const incoming = subData.data?.messageSent;
+        if (incoming) {
+          appendServerMessageIfNotExists(client.cache, conversationId, incoming);
+          if (incoming.senderId !== user?.id) {
+            updateMessageStatusMutation({
+              variables: {
+                input: {
+                  messageId: incoming.id,
+                  status: MessageStatus.Read,
+                },
+              },
+            }).catch(() => {});
+          }
+        }
+      },
+    },
+  );
+
+  useSubscription<OnMessageStatusUpdatedSubscription, OnMessageStatusUpdatedSubscriptionVariables>(
+    ON_MESSAGE_STATUS_UPDATED_SUBSCRIPTION,
+    {
+      variables: { conversationId },
+      onData: ({ data: subData }) => {
+        const statusUpdate = subData.data?.messageStatusUpdated;
+        if (statusUpdate) {
+          updateMessageStatusInCache(
+            client.cache,
+            conversationId,
+            statusUpdate.messageId,
+            statusUpdate.status,
+          );
+        }
+      },
+    },
+  );
+
+  useSubscription<OnUserTypingSubscription, OnUserTypingSubscriptionVariables>(
+    ON_USER_TYPING_SUBSCRIPTION,
+    {
+      variables: { conversationId },
+      onData: ({ data: subData }) => {
+        const typingData = subData.data?.userTyping;
+        if (typingData && typingData.userId !== user?.id) {
+          setTypingUser(typingData.isTyping ? typingData.username : null);
+        }
+      },
+    },
+  );
+
+  // Debounced typing notification publisher
+  const sendTypingStatus = useCallback(
+    (isTyping: boolean) => {
+      if (isTypingRef.current !== isTyping) {
+        isTypingRef.current = isTyping;
+        setTypingMutation({
+          variables: {
+            input: {
+              conversationId,
+              isTyping,
+            },
+          },
+        }).catch(() => {});
+      }
+    },
+    [conversationId, setTypingMutation],
+  );
+
+  const handleInputChange = useCallback(
+    (text: string) => {
+      setInputText(text);
+
+      if (text.trim().length > 0) {
+        sendTypingStatus(true);
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        typingTimeoutRef.current = setTimeout(() => {
+          sendTypingStatus(false);
+        }, 2500);
+      } else {
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        sendTypingStatus(false);
+      }
+    },
+    [sendTypingStatus],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (isTypingRef.current) {
+        sendTypingStatus(false);
+      }
+    };
+  }, [sendTypingStatus]);
+
+  // Offline queue sender registration
   useEffect(() => {
     const queueManager = OfflineQueueManager.getInstance();
     queueManager.initialize().catch(() => {});
@@ -133,6 +269,11 @@ export const ChatRoomScreen: React.FC = () => {
     const trimmed = inputText.trim();
     if (!trimmed || sending || !user) return;
 
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    sendTypingStatus(false);
+
     setInputText('');
 
     const clientMutationId = `mut_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -186,12 +327,10 @@ export const ChatRoomScreen: React.FC = () => {
 
       const serverMessage = response.data?.sendMessage;
       if (serverMessage) {
-        // Successful send: dequeue and replace temp message in cache
         await queueManager.dequeue(clientMutationId);
         replaceOptimisticMessageInCache(client.cache, conversationId, tempId, serverMessage);
       }
     } catch {
-      // Failed mutation: keep in queue and mark FAILED in cache with tap to retry
       await queueManager.markFailed(clientMutationId);
       updateMessageStatusInCache(client.cache, conversationId, tempId, MessageStatus.Failed);
     }
@@ -199,16 +338,16 @@ export const ChatRoomScreen: React.FC = () => {
     inputText,
     sending,
     user,
-    device?.deviceId,
+    sendTypingStatus,
     recipientPublicKey,
-    client.cache,
     conversationId,
+    device?.deviceId,
+    client.cache,
     sendMessageMutation,
   ]);
 
   const handleRetry = useCallback(
     async (failedMessage: MessageFieldsFragment) => {
-      // Mark as PENDING immediately in cache
       updateMessageStatusInCache(
         client.cache,
         conversationId,
@@ -245,7 +384,6 @@ export const ChatRoomScreen: React.FC = () => {
           );
         }
       } catch {
-        // Still failed, mark back to FAILED
         updateMessageStatusInCache(
           client.cache,
           conversationId,
@@ -334,6 +472,8 @@ export const ChatRoomScreen: React.FC = () => {
         )}
       </View>
 
+      {typingUser && <TypingIndicator username={typingUser} />}
+
       <View
         style={[
           styles.inputBar,
@@ -347,7 +487,7 @@ export const ChatRoomScreen: React.FC = () => {
           placeholder="Encrypted message..."
           placeholderTextColor={colors.textMuted}
           value={inputText}
-          onChangeText={setInputText}
+          onChangeText={handleInputChange}
           onSubmitEditing={handleSend}
           returnKeyType="send"
           style={[styles.input, typography.bodyMedium, { color: colors.textPrimary }]}

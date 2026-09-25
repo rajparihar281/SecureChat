@@ -129,3 +129,34 @@ export function replaceOptimisticMessageInCache(
     // Ignored
   }
 }
+
+export function appendServerMessageIfNotExists(
+  cache: ApolloCache<unknown>,
+  conversationId: string,
+  serverMessage: MessageFieldsFragment,
+): void {
+  try {
+    const existing = cache.readQuery<GetMessagesQuery, GetMessagesQueryVariables>({
+      query: GET_MESSAGES_QUERY,
+      variables: { conversationId },
+    });
+
+    if (existing?.messages) {
+      if (existing.messages.items.some(m => m.id === serverMessage.id)) {
+        return;
+      }
+      cache.writeQuery<GetMessagesQuery, GetMessagesQueryVariables>({
+        query: GET_MESSAGES_QUERY,
+        variables: { conversationId },
+        data: {
+          messages: {
+            ...existing.messages,
+            items: [...existing.messages.items, serverMessage],
+          },
+        },
+      });
+    }
+  } catch {
+    // Ignored
+  }
+}

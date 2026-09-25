@@ -48,11 +48,11 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Cache rollback on mutation error with "Failed, tap to retry" state
   - [x] Offline queue manager with NetInfo auto-retry on reconnect
 
-- [ ] **Phase 8: Real-Time Subscriptions**
-  - [ ] GraphQL subscriptions over `graphql-ws` WebSocket transport
-  - [ ] Real-time message reception, delivery, and read receipts
-  - [ ] Live typing indicators with debounced publishing
-  - [ ] AppState-aware connection lifecycle (pause in background, resume in foreground)
+- [x] **Phase 8: Real-Time Subscriptions**
+  - [x] GraphQL subscriptions over `graphql-ws` WebSocket transport
+  - [x] Real-time message reception, delivery, and read receipts
+  - [x] Live typing indicators with debounced publishing
+  - [x] AppState-aware connection lifecycle (pause in background, resume in foreground)
 
 - [ ] **Phase 9: End-to-End Encryption (`packages/crypto`)**
   - [ ] Platform-agnostic crypto library (X25519 key derivation, XChaCha20-Poly1305 encryption)
