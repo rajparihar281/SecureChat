@@ -5,7 +5,7 @@
 
 export const CRYPTO_VERSION = '1.0.0';
 
-export interface KeyPairBase64 {
-  publicKey: string;
-  secretKey: string;
-}
+export * from './errors';
+export * from './keys';
+export * from './encryption';
+export * from './fingerprint';
