@@ -8,6 +8,8 @@ export interface AuthTokens {
 export interface DeviceIdentity {
   deviceId: string;
   deviceName: string;
+  publicKey?: string;
+  secretKey?: string;
 }
 
 const AUTH_SERVICE = 'com.securechat.auth_tokens';

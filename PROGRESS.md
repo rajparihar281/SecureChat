@@ -54,12 +54,12 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Live typing indicators with debounced publishing
   - [x] AppState-aware connection lifecycle (pause in background, resume in foreground)
 
-- [ ] **Phase 9: End-to-End Encryption (`packages/crypto`)**
-  - [ ] Platform-agnostic crypto library (X25519 key derivation, XChaCha20-Poly1305 encryption)
-  - [ ] Per-device identity keys and public key bundle exchange
-  - [ ] Safety number / fingerprint verification screen
-  - [ ] Private key isolation in Keystore/Keychain (zero ciphertext or keys in Apollo cache/AsyncStorage)
-  - [ ] Comprehensive security documentation (`docs/SECURITY.md`)
+- [x] **Phase 9: End-to-End Encryption (`packages/crypto`)**
+  - [x] Platform-agnostic crypto library (X25519 key derivation, XChaCha20-Poly1305 encryption)
+  - [x] Per-device identity keys and public key bundle exchange
+  - [x] Safety number / fingerprint verification screen
+  - [x] Private key isolation in Keystore/Keychain (zero ciphertext or keys in Apollo cache/AsyncStorage)
+  - [x] Comprehensive security documentation (`docs/SECURITY.md`)
 
 - [ ] **Phase 10: Push Notifications**
   - [ ] `@react-native-firebase/messaging` integration with Android 13 POST_NOTIFICATIONS permission
