@@ -7,6 +7,7 @@ import { RootNavigator } from './navigation';
 import { createApolloClient } from './graphql/client';
 import { SessionManager, AuthProvider, useAuth } from './auth';
 import { LoadingSpinner } from './components';
+import { NotificationService } from './notifications';
 
 const sessionManager = SessionManager.getInstance();
 const apolloClient = createApolloClient({ tokenProvider: sessionManager });
@@ -14,6 +15,20 @@ const apolloClient = createApolloClient({ tokenProvider: sessionManager });
 const AppContent: React.FC = () => {
   const { isDark, colors } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      const notificationService = NotificationService.getInstance();
+      notificationService.setApolloClient(apolloClient);
+      notificationService.initialize();
+      notificationService.registerToken().catch(() => {});
+
+      return () => {
+        notificationService.destroy();
+      };
+    }
+    return undefined;
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return <LoadingSpinner message="Initializing SecureChat..." />;

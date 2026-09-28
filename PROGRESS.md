@@ -61,12 +61,12 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Private key isolation in Keystore/Keychain (zero ciphertext or keys in Apollo cache/AsyncStorage)
   - [x] Comprehensive security documentation (`docs/SECURITY.md`)
 
-- [ ] **Phase 10: Push Notifications**
-  - [ ] `@react-native-firebase/messaging` integration with Android 13 POST_NOTIFICATIONS permission
-  - [ ] Foreground, background, and terminated push handlers
-  - [ ] Zero-plaintext payload policy (ciphertext/metadata alert only)
-  - [ ] Deep linking to target conversation screen
-  - [ ] Backend `firebase-admin` notification dispatcher
+- [x] **Phase 10: Push Notifications**
+  - [x] `@react-native-firebase/messaging` integration with Android 13 POST_NOTIFICATIONS permission
+  - [x] Foreground, background, and terminated push handlers
+  - [x] Zero-plaintext payload policy (ciphertext/metadata alert only)
+  - [x] Deep linking to target conversation screen
+  - [x] Backend `firebase-admin` notification dispatcher
 
 - [ ] **Phase 11: Kotlin Native Module**
   - [ ] Custom Android native module wrapping `ACTION_OPEN_DOCUMENT`
