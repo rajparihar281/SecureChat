@@ -10,7 +10,10 @@ module.exports = {
       '<rootDir>/src/__mocks__/@react-native-async-storage/async-storage.ts',
     '^@react-native-community/netinfo$':
       '<rootDir>/src/__mocks__/@react-native-community/netinfo.ts',
+    '^@react-native-firebase/messaging$':
+      '<rootDir>/src/__mocks__/@react-native-firebase/messaging.ts',
   },
+
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',

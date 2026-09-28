@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from './types';
+import { navigationRef } from './navigationRef';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { ChatRoomScreen, SecurityVerificationScreen, ContactProfileScreen } from '../screens';
@@ -18,6 +19,7 @@ export const RootNavigator: React.FC<RootNavigatorProps> = ({ isAuthenticated = 
 
   return (
     <NavigationContainer
+      ref={navigationRef}
       theme={{
         dark: isDark,
         colors: {

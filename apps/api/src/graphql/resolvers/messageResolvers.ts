@@ -3,6 +3,7 @@ import { AuthenticationError, NotFoundError, UserInputError } from '../errors.js
 import { memoryDb, MessageRow } from '../../db/memoryStore.js';
 import { pubsub } from '../pubsub.js';
 import { GRAPHQL_WS_EVENTS } from '@securechat/shared';
+import { PushDispatcher } from '../../notifications/index.js';
 
 export interface SendMessageArgs {
   input: {
@@ -116,6 +117,32 @@ export const messageResolvers = {
       await pubsub.publish(`${GRAPHQL_WS_EVENTS.MESSAGE_SENT}:${conversationId}`, {
         messageSent: formatted,
       });
+
+      // Dispatch zero-plaintext push notification to other conversation participants
+      try {
+        const participants = memoryDb.getParticipants(conv.id);
+        const otherParticipants = participants.filter(p => p.user_id !== context.currentUser!.id);
+        const pushDispatcher = PushDispatcher.getInstance();
+
+        for (const part of otherParticipants) {
+          const recipientDevices = memoryDb.findDevicesByUserId(part.user_id);
+          for (const dev of recipientDevices) {
+            if (dev.push_token) {
+              pushDispatcher
+                .sendNewMessageNotification({
+                  recipientPushToken: dev.push_token,
+                  conversationId,
+                  senderId: context.currentUser.id,
+                  senderName: context.currentUser.display_name || context.currentUser.username,
+                  messageId: formatted.id,
+                })
+                .catch(() => {});
+            }
+          }
+        }
+      } catch {
+        // Notification dispatch failures should not fail message mutation
+      }
 
       return formatted;
     },

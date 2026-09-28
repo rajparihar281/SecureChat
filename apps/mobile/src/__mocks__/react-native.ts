@@ -1,7 +1,21 @@
 export const Platform = {
   OS: 'android',
+  Version: 34,
   select: <T>(objs: { android?: T; ios?: T; default?: T }): T | undefined =>
     objs.android ?? objs.default,
+};
+
+export const PermissionsAndroid = {
+  PERMISSIONS: {
+    POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
+  },
+  RESULTS: {
+    GRANTED: 'granted',
+    DENIED: 'denied',
+    NEVER_ASK_AGAIN: 'never_ask_again',
+  },
+  request: jest.fn().mockResolvedValue('granted'),
+  check: jest.fn().mockResolvedValue(true),
 };
 
 export const StyleSheet = {
@@ -69,4 +83,5 @@ export default {
   useColorScheme,
   AppState,
   Animated,
+  PermissionsAndroid,
 };
