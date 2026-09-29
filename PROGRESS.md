@@ -68,11 +68,11 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Deep linking to target conversation screen
   - [x] Backend `firebase-admin` notification dispatcher
 
-- [ ] **Phase 11: Kotlin Native Module**
-  - [ ] Custom Android native module wrapping `ACTION_OPEN_DOCUMENT`
-  - [ ] Promise-based interface returning URI, name, MIME type, size
-  - [ ] Typed TypeScript wrapper with client-side file encryption before upload
-  - [ ] iOS stub & platform capability documentation
+- [x] **Phase 11: Kotlin Native Module**
+  - [x] Custom Android native module wrapping `ACTION_OPEN_DOCUMENT`
+  - [x] Promise-based interface returning URI, name, MIME type, size
+  - [x] Typed TypeScript wrapper with client-side file encryption before upload
+  - [x] iOS stub & platform capability documentation
 
 - [ ] **Phase 12: Performance & Quality**
   - [ ] Re-render elimination audit with before/after documentation (`docs/PERFORMANCE.md`)
