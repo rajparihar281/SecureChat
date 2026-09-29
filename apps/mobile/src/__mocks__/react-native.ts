@@ -67,6 +67,17 @@ export const Animated = {
   Text: 'Text',
 };
 
+export const NativeModules: Record<string, unknown> = {
+  SecureDocumentPicker: {
+    pickDocument: jest.fn().mockResolvedValue({
+      uri: 'content://com.android.providers.media.documents/document/101',
+      fileName: 'secret_contract.pdf',
+      mimeType: 'application/pdf',
+      fileSize: 1048576,
+    }),
+  },
+};
+
 export default {
   Platform,
   StyleSheet,
@@ -84,4 +95,5 @@ export default {
   AppState,
   Animated,
   PermissionsAndroid,
+  NativeModules,
 };
