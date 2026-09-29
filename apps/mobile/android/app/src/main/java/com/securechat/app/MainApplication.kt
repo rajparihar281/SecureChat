@@ -16,8 +16,9 @@ class MainApplication : Application(), ReactApplication {
         object : DefaultReactNativeHost(this) {
             override fun getPackages(): List<ReactPackage> =
                 PackageList(this).packages.apply {
-                    // Custom packages will be registered here (Phase 11 native module)
+                    add(SecureDocumentPickerPackage())
                 }
+
 
             override fun getJSMainModuleName(): String = "index"
 
