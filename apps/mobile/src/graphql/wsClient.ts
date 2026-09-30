@@ -24,6 +24,25 @@ export interface WsConnectionHandle {
   getIsConnected: () => boolean;
 }
 
+class FallbackWebSocket {
+  public static readonly CONNECTING = 0;
+  public static readonly OPEN = 1;
+  public static readonly CLOSING = 2;
+  public static readonly CLOSED = 3;
+  public readyState = 3;
+  public onopen: (() => void) | null = null;
+  public onclose: (() => void) | null = null;
+  public onerror: (() => void) | null = null;
+  public onmessage: (() => void) | null = null;
+  public close(): void {}
+  public send(): void {}
+}
+
+const socketImpl =
+  typeof WebSocket !== 'undefined'
+    ? WebSocket
+    : (globalThis as unknown as { WebSocket: unknown }).WebSocket || FallbackWebSocket;
+
 export function createWsLink(config: WsClientConfig = {}): WsConnectionHandle {
   const wsUrl = config.wsUrl || getDefaultWsUrl();
   let isConnected = false;
@@ -34,6 +53,8 @@ export function createWsLink(config: WsClientConfig = {}): WsConnectionHandle {
     lazy: config.lazy ?? true,
     retryAttempts: 5,
     shouldRetry: () => !isPaused,
+    webSocketImpl: socketImpl,
+
     connectionParams: async () => {
       try {
         const token = await config.tokenProvider?.getAccessToken();

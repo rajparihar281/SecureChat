@@ -1,9 +1,28 @@
+/// <reference types="jest" />
+
 export const Platform = {
   OS: 'android',
   Version: 34,
   select: <T>(objs: { android?: T; ios?: T; default?: T }): T | undefined =>
     objs.android ?? objs.default,
 };
+
+if (typeof (globalThis as unknown as { WebSocket: unknown }).WebSocket === 'undefined') {
+  class MockWebSocket {
+    public static readonly CONNECTING = 0;
+    public static readonly OPEN = 1;
+    public static readonly CLOSING = 2;
+    public static readonly CLOSED = 3;
+    public readyState = 3;
+    public onopen: (() => void) | null = null;
+    public onclose: (() => void) | null = null;
+    public onerror: (() => void) | null = null;
+    public onmessage: (() => void) | null = null;
+    public close(): void {}
+    public send(): void {}
+  }
+  (globalThis as unknown as { WebSocket: unknown }).WebSocket = MockWebSocket;
+}
 
 export const PermissionsAndroid = {
   PERMISSIONS: {

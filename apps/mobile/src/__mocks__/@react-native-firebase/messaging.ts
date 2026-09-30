@@ -1,3 +1,5 @@
+/// <reference types="jest" />
+
 const defaultInstance = {
   requestPermission: jest.fn().mockResolvedValue(1),
   getToken: jest.fn().mockResolvedValue('mock_fcm_token_123'),

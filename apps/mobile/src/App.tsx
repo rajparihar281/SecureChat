@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from './theme';
 import { RootNavigator } from './navigation';
 import { createApolloClient } from './graphql/client';
 import { SessionManager, AuthProvider, useAuth } from './auth';
-import { LoadingSpinner } from './components';
+import { LoadingSpinner, ErrorBoundary } from './components';
 import { NotificationService } from './notifications';
 
 const sessionManager = SessionManager.getInstance();
@@ -51,7 +51,9 @@ export const App: React.FC = () => {
       <ApolloProvider client={apolloClient}>
         <AuthProvider>
           <ThemeProvider>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </ThemeProvider>
         </AuthProvider>
       </ApolloProvider>
