@@ -74,10 +74,10 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Typed TypeScript wrapper with client-side file encryption before upload
   - [x] iOS stub & platform capability documentation
 
-- [ ] **Phase 12: Performance & Quality**
-  - [ ] Re-render elimination audit with before/after documentation (`docs/PERFORMANCE.md`)
-  - [ ] Global ErrorBoundary component with crash recovery UI
-  - [ ] Complete accessibility tags (`accessibilityLabel`, `accessibilityRole`, `accessibilityHint`)
+- [x] **Phase 12: Performance & Quality**
+  - [x] Re-render elimination audit with before/after documentation (`docs/PERFORMANCE.md`)
+  - [x] Global ErrorBoundary component with crash recovery UI
+  - [x] Complete accessibility tags (`accessibilityLabel`, `accessibilityRole`, `accessibilityHint`)
 
 - [ ] **Phase 13: Release Readiness**
   - [ ] Android production release configuration (signing template, R8/ProGuard rules, versioning)
