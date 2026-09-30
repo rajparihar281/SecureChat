@@ -58,6 +58,11 @@ export const ConversationRow: React.FC<ConversationRowProps> = React.memo(
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={() => onPress(conversation)}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={`Conversation with ${title}${conversation.unreadCount > 0 ? `, ${conversation.unreadCount} unread messages` : ''}`}
+        accessibilityHint="Opens encrypted chat room"
+
         style={[
           styles.container,
           {
