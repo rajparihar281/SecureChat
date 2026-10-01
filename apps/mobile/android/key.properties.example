@@ -1,0 +1,8 @@
+# SecureChat Android Production Release Signing Template
+# Copy this file to apps/mobile/android/key.properties and replace with production credentials.
+# NEVER commit key.properties or production keystore files to source control!
+
+storeFile=release.keystore
+storePassword=your_keystore_password
+keyAlias=securechat_key
+keyPassword=your_key_password
