@@ -45,6 +45,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(
 
     return (
       <View
+        accessible={true}
+        accessibilityRole="text"
+        accessibilityLabel={`${isOutgoing ? 'Sent message' : `Received message from ${senderName || 'contact'}`}: ${displayText}, at ${formattedTime}`}
         style={[
           styles.container,
           isOutgoing ? styles.outgoingContainer : styles.incomingContainer,

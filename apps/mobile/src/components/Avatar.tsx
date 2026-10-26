@@ -25,7 +25,12 @@ export const Avatar: React.FC<AvatarProps> = ({ name, avatarUrl, size = 44, isOn
   const badgeSize = Math.max(size * 0.28, 10);
 
   return (
-    <View style={[{ width: size, height: size }, styles.container, style]}>
+    <View
+      accessible={true}
+      accessibilityRole="image"
+      accessibilityLabel={`${name}'s avatar`}
+      style={[{ width: size, height: size }, styles.container, style]}
+    >
       {avatarUrl ? (
         <Image
           source={{ uri: avatarUrl }}

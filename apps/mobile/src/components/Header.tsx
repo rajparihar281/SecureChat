@@ -15,6 +15,9 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, onBack, rightAc
 
   return (
     <View
+      accessible={true}
+      accessibilityRole="header"
+      accessibilityLabel={title}
       style={[
         styles.container,
         {

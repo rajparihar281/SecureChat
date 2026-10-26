@@ -12,5 +12,13 @@
   },
   "references": [{ "path": "../../packages/shared" }, { "path": "../../packages/crypto" }],
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "android", "ios", "**/*.test.ts", "**/*.test.tsx"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "android",
+    "ios",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/__mocks__/**/*"
+  ]
 }
