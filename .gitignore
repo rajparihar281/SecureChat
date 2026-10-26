@@ -28,6 +28,7 @@ apps/mobile/android/build/
 apps/mobile/android/.idea/
 apps/mobile/android/*.iml
 apps/mobile/android/local.properties
+apps/mobile/android/key.properties
 apps/mobile/android/.cxx/
 *.keystore
 !apps/mobile/android/app/debug.keystore

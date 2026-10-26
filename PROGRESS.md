@@ -79,9 +79,9 @@ This document tracks autonomous progress across all 14 project phases.
   - [x] Global ErrorBoundary component with crash recovery UI
   - [x] Complete accessibility tags (`accessibilityLabel`, `accessibilityRole`, `accessibilityHint`)
 
-- [ ] **Phase 13: Release Readiness**
-  - [ ] Android production release configuration (signing template, R8/ProGuard rules, versioning)
-  - [ ] App store checklist (`docs/STORE_CHECKLIST.md`) covering Play Store Data Safety & Apple Privacy
+- [x] **Phase 13: Release Readiness**
+  - [x] Android production release configuration (signing template, R8/ProGuard rules, versioning)
+  - [x] App store checklist (`docs/STORE_CHECKLIST.md`) covering Play Store Data Safety & Apple Privacy
 
 - [ ] **Phase 14: Final Documentation & Polish**
   - [ ] Architecture diagrams (Mermaid), setup guide, API reference, scripts
